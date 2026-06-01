@@ -9,7 +9,7 @@ include(cmake/Vcpkg.cmake)
 # 🧩 Project details
 # ==========================================================
 project(
-  PersonalProject
+  ThreadExperiment
   VERSION 0.1.0
   LANGUAGES C
 )

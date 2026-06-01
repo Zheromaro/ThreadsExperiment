@@ -6,12 +6,12 @@
 # ==========================================================
 # 📦 Configuration
 # ==========================================================
-PROJECT_NAME := PersonalProject
+PROJECT_NAME := ThreadExperiment
 CMAKE_OPT_PREFIX := $(PROJECT_NAME)
 BROWSER := python3 -c "$$BROWSER_PYSCRIPT"
 INSTALL_LOCATION := ~/.local
 # Select Compiler gcc/clang
-COMPILER ?= gcc
+COMPILER ?= clang
 
 ifeq ($(COMPILER),clang)
   export CC := clang
