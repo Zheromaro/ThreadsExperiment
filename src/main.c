@@ -1,42 +1,39 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <errno.h>
 
-int primes[10] = { 2, 3, 5, 7, 11, 13, 17, 19, 23, 29 };
+pthread_mutex_t mutex;
 
 void* routine(void* arg) {
-    int *sum = malloc(sizeof(int));
-    *sum = 0;
-    for (int i = 0; i < 5; i++) {
-        *sum += ((int*)arg)[i];
+    if (pthread_mutex_trylock(&mutex) == 0) {
+        printf("Got locked\n");
+        sleep(1);
+        pthread_mutex_unlock(&mutex);
+    } else {
+        printf("Didn't get locked\n");
     }
-    printf("Thread sum : %d\n", *sum);
-    return sum;
 }
 
 int main(int argc, char *argv[]) {
-    int sum = 0;
-    int th_num = 2;
+    int th_num = 4;
     pthread_t th[th_num];
 
+    pthread_mutex_init(&mutex, NULL);
     for (int i = 0; i < th_num; i++) {
-        if (pthread_create(th + i, NULL, routine, primes+(5*i) ) != 0) {
+        if (pthread_create(th + i, NULL, routine, NULL) != 0) {
             perror("failed to create thread!");
             return 1;
         }
     }
     for (int i = 0; i < th_num; i++) {
-        int* resault;
-        if (pthread_join(th[i], (void**)&resault) != 0) {
+        if (pthread_join(th[i], NULL) != 0) {
             perror("failed to join thread!");
             return 2;
         }
-        sum += *resault;
     }
-
-    printf("the sum is %d\n", sum);
+    pthread_mutex_destroy(&mutex);
 
     return 0;
 }
