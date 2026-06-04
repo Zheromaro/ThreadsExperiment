@@ -10,8 +10,8 @@ include(cmake/Vcpkg.cmake)
 # ==========================================================
 project(
   ThreadExperiment
-  VERSION 0.1.0
-  LANGUAGES C
+  VERSION 0.0.0
+  LANGUAGES C CXX
 )
 
 message(STATUS "🚀 Starting configuration for ${PROJECT_NAME} v${PROJECT_VERSION}")
@@ -219,7 +219,7 @@ message(STATUS "")
 message(STATUS "====== ${PROJECT_NAME} Configuration Summary ======")
 message(STATUS "🔧 C Compiler:            ${CMAKE_C_COMPILER} (${CMAKE_C_COMPILER_ID})")
 message(STATUS "🔧 Build type:            ${CMAKE_BUILD_TYPE}")
-message(STATUS "⚙️ Executable:            ${${PROJECT_NAME}_BUILD_EXECUTABLE}")
+message(STATUS "⚙️ Executable:             ${${PROJECT_NAME}_BUILD_EXECUTABLE}")
 message(STATUS "📜 Headers-only:          ${${PROJECT_NAME}_BUILD_HEADERS_ONLY}")
 message(STATUS "📦 Shared library:        ${${PROJECT_NAME}_BUILD_SHARED}")
 message(STATUS "📦 Install prefix:        ${CMAKE_INSTALL_PREFIX}")
