@@ -1,35 +1,35 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
 #include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include <errno.h>
 #include <time.h>
+#include <semaphore.h>
 
-#define TH_NUM 8
+#define TH_NUM 16
 
-pthread_mutex_t mutexFuel;
-int fuel = 50;
+sem_t semaphore;
 
 void* routine(void* arg) {
-    pthread_mutex_lock(&mutexFuel);
-    pthread_mutex_lock(&mutexFuel);
-    pthread_mutex_lock(&mutexFuel);
-    fuel += 50;
-    printf("Incremented fuel to: %d\n", fuel);
-    pthread_mutex_unlock(&mutexFuel);
-    pthread_mutex_unlock(&mutexFuel);
-    pthread_mutex_unlock(&mutexFuel);
+    printf("(%d) Waiting in the login queue\n", *((int*)arg));
+    sem_wait(&semaphore);
+    printf("(%d) Logged in\n", *((int*)arg));
+    sleep(rand() % 5 + 1);
+    printf("(%d) Logged out\n", *((int*)arg));
+    sem_post(&semaphore);
+    free(arg);
+
+    return NULL;
 }
 
 int main(int argc, char *argv[]) {
     pthread_t th[TH_NUM];
-    pthread_mutexattr_t recursiveMutex;
 
-    pthread_mutexattr_init(&recursiveMutex);
-    pthread_mutexattr_settype(&recursiveMutex, PTHREAD_MUTEX_RECURSIVE);
-    pthread_mutex_init(&mutexFuel, &recursiveMutex);
+    sem_init(&semaphore, 0, 12);
     for (int i = 0; i < TH_NUM; i++) {
-        if (pthread_create(th + i, NULL, routine, NULL) != 0) {
+        int* a = malloc(sizeof(int));
+        *a = i;
+        if (pthread_create(th + i, NULL, &routine, a) != 0) {
             perror("failed to create thread!");
         }
     }
@@ -38,9 +38,7 @@ int main(int argc, char *argv[]) {
             perror("failed to join thread!");
         }
     }
-    printf("Fuel: %d\n", fuel);
-    pthread_mutexattr_destroy(&recursiveMutex);
-    pthread_mutex_destroy(&mutexFuel);
+    sem_destroy(&semaphore);
 
     return 0;
 }
