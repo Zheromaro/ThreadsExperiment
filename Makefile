@@ -3,6 +3,12 @@
 
 .DEFAULT_GOAL := help
 
+# Colors
+COLOR_RESET  := \033[0m
+COLOR_GREEN  := \033[1;32m
+COLOR_YELLOW := \033[1;33m
+COLOR_RED    := \033[1;31m
+
 # ==========================================================
 # 📦 Configuration
 # ==========================================================
@@ -174,7 +180,23 @@ test_dir: ## Configure, rebuild, and run one GTest executable (use DIR=dir/name 
 # 🚀 Run the project
 # ==========================================================
 run: ## Run the executable
-	./build/bin/Release/$(PROJECT_NAME) || ./build/bin/Debug/$(PROJECT_NAME)
+	@printf "$(COLOR_YELLOW)▶️  Starting $(PROJECT_NAME)...$(COLOR_RESET)\n"
+	@if [ -x ./build/bin/Release/$(PROJECT_NAME) ]; then \
+		./build/bin/Release/$(PROJECT_NAME); \
+		EXIT_CODE=$$?; \
+	elif [ -x ./build/bin/Debug/$(PROJECT_NAME) ]; then \
+		./build/bin/Debug/$(PROJECT_NAME); \
+		EXIT_CODE=$$?; \
+	else \
+		printf "$(COLOR_RED)❌ No executable found in build/bin/Release or build/bin/Debug$(COLOR_RESET)\n"; \
+		EXIT_CODE=1; \
+	fi; \
+	if [ $$EXIT_CODE -eq 0 ]; then \
+		printf "$(COLOR_GREEN)✅ Finished $(PROJECT_NAME)$(COLOR_RESET)\n"; \
+	else \
+		printf "$(COLOR_RED)❌ Execution failed (exit $$EXIT_CODE)$(COLOR_RESET)\n"; \
+	fi; \
+	exit $$EXIT_CODE
 
 brun: ## Build and run
 	$(MAKE) build

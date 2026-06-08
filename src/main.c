@@ -6,31 +6,60 @@
 #include <time.h>
 #include <semaphore.h>
 
-#define TH_NUM 16
+#define TH_NUM 8
 
-sem_t semaphore;
+pthread_mutex_t mutexBuffer;
+sem_t semEmpty;
+sem_t semFull;
+int buffer[10];
+int count = 0;
 
-void* routine(void* arg) {
-    printf("(%d) Waiting in the login queue\n", *((int*)arg));
-    sem_wait(&semaphore);
-    printf("(%d) Logged in\n", *((int*)arg));
-    sleep(rand() % 5 + 1);
-    printf("(%d) Logged out\n", *((int*)arg));
-    sem_post(&semaphore);
-    free(arg);
+void* producer(void* arg) {
+    while (1) {
+        // Produce
+        int x = rand() % 100;
 
-    return NULL;
+        // Add to the buffer7
+        sem_wait(&semEmpty);
+        pthread_mutex_lock(&mutexBuffer);
+        buffer[count] = x;
+        count++;
+        pthread_mutex_unlock(&mutexBuffer);
+        sem_post(&semFull);
+    }
+}
+void* consumer(void* arg) {
+    while (1) {
+        // Remove from the buffer
+        sem_wait(&semFull);
+        pthread_mutex_lock(&mutexBuffer);
+        int y = buffer[count - 1];
+        count--;
+        pthread_mutex_unlock(&mutexBuffer);
+        sem_post(&semEmpty);
+
+        // Consume
+        printf("Got %d\n", y);
+        sleep(1);
+    }
 }
 
 int main(int argc, char *argv[]) {
+    srand(time(NULL));
     pthread_t th[TH_NUM];
 
-    sem_init(&semaphore, 0, 12);
+    pthread_mutex_init(&mutexBuffer, NULL);
+    sem_init(&semEmpty, 0, 10);
+    sem_init(&semFull, 0, 0);
     for (int i = 0; i < TH_NUM; i++) {
-        int* a = malloc(sizeof(int));
-        *a = i;
-        if (pthread_create(th + i, NULL, &routine, a) != 0) {
-            perror("failed to create thread!");
+        if (i % 2 == 0) {
+            if (pthread_create(th + i, NULL, &producer, NULL) != 0)
+                perror("failed to create thread!");
+        }
+        else
+        {
+            if (pthread_create(th + i, NULL, &consumer, NULL) != 0)
+                perror("failed to create thread!");
         }
     }
     for (int i = 0; i < TH_NUM; i++) {
@@ -38,7 +67,9 @@ int main(int argc, char *argv[]) {
             perror("failed to join thread!");
         }
     }
-    sem_destroy(&semaphore);
+    sem_destroy(&semEmpty);
+    sem_destroy(&semFull);
+    pthread_mutex_destroy(&mutexBuffer);
 
     return 0;
 }
